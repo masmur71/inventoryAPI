@@ -55,14 +55,49 @@ graph TD
 🔒 Type-Safe: Written in TypeScript for robustness and better developer experience.
 
 ## Tech Stack
-Component,Technology,Description
-Runtime,Node.js (v18),JavaScript Runtime
-Framework,Express.js,Web Framework
-Language,TypeScript,Static Typing
-Database,MongoDB,NoSQL Database
-Caching,Redis,In-Memory Data Store
-DevOps,Docker & Compose,Containerization
-Testing,Jest & Supertest,Unit & Integration Testing
+Runtime   : Node.js
+Framework : Express.js
+Languange : Typescript
+Database  : MongoDB
+Caching   : Redis
+DevOps    : Docker
+Testing   : Jest & Supertest
+
+## Getting Started
+Prerequisites :
+Docker & Docker Compose
+
+1. Clone the repo :
+   ```
+    git clone [https://github.com/masmur71/inverntoryAPI.git](https://github.com/your-username/inventory-api.git)
+   ```
+2. Start Services
+   ```
+   docker-compose up --build
+   ```
+3. Access the API @ localhost:3000
+
+## Test
+This project includes a specific Concurrency Test Suite that simulates high-traffic scenarios.
+
+To run the tests:
+```
+npm test
+```
+## 📦 Product API Endpoints
+
+| Method | Endpoint                    | Body                         | Description                     |
+|-------|-----------------------------|------------------------------|---------------------------------|
+| GET   | /api/products               | -                            | Get all products (Cached)       |
+| GET   | /api/products/:id           | -                            | Get product detail (Cached)     |
+| POST  | /api/products               | `{ name, price, stock, ... }`| Create new product              |
+| POST  | /api/products/:id/purchase  | `{ quantity: 1 }`            | Atomic Purchase                 |
+
+
+Project Creator/Maintainer :
+
+github.com/masmur71
+
 
 
 
