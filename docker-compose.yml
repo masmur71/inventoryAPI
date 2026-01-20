@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  #app
+  app:
+    build: . 
+    container_name: inventory_app
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+
+      - MONGO_URI=mongodb://mongo:27017/inventory_db
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - inventory_net
+
+  # MongoDB
+  mongo:
+    image: mongo:latest
+    container_name: inventory_mongo_prod
+    volumes:
+      - mongo_prod_data:/data/db
+    networks:
+      - inventory_net
+
+  # Redis Cache
+  redis:
+    image: redis:alpine
+    container_name: inventory_redis_prod
+    networks:
+      - inventory_net
+
+# Setup Network 
+networks:
+  inventory_net:
+    driver: bridge
+
+volumes:
+  mongo_prod_data:

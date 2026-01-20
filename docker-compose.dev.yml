@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  # Service Database MongoDB
+  mongo:
+    image: mongo:latest
+    container_name: inventory_mongo
+    ports:
+      - "27017:27017" # Mapping port container ke laptop
+    volumes:
+      - mongo_data:/data/db # Agar data tidak hilang saat restart
+
+  # Service Cache Redis
+  redis:
+    image: redis:alpine
+    container_name: inventory_redis
+    ports:
+      - "6379:6379" # Mapping port container ke laptop
+
+volumes:
+  mongo_data:

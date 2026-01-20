@@ -1,0 +1,175 @@
+Project 1: "Scalable API with Caching & Rate Limiting" (Backend Focus)
+Tujuannya adalah membuktikan Anda bisa membuat backend yang production-ready, bukan sekadar "hello world".
+
+Deskripsi: Buat RESTful API untuk sistem manajemen inventaris barang yang mampu menangani high-concurrency.
+
+Tech Stack: Node.js, Express, MongoDB (NoSQL), Redis (Caching).
+
+Ops Challenge:
+
+Docker: Buat Dockerfile yang optimal (gunakan multi-stage build untuk memperkecil image size).
+
+Docker Compose: Jalankan App, MongoDB, dan Redis secara lokal dengan satu perintah docker-compose up.
+
+CI/CD: Gunakan GitHub Actions. Buat workflow dimana setiap kali Anda push ke branch main, GitHub akan otomatis menjalankan unit test.
+
+Deployment: Deploy ke Railway.app (otomatis build dari GitHub).
+
+
+Konsep: Sebuah RESTful API high-performance untuk mengelola stok barang (CRUD) yang mensimulasikan trafik tinggi.
+
+Tech Stack: Node.js, Express, MongoDB (NoSQL), Redis, Docker, GitHub Actions.
+
+Fitur Utama:
+
+Caching Strategy: Mengimplementasikan Redis untuk menyimpan data yang sering diakses (seperti detail produk), mengurangi beban database hingga 50%.
+
+Containerization: Aplikasi dan database dibungkus dalam Docker Container agar lingkungan development dan production konsisten.
+
+CI Pipeline: Otomatis menjalankan unit test (Jest) setiap kali ada kode baru yang di-push ke GitHub.
+
+Value: Membuktikan pemahaman tentang performa backend dan otomatisasi dasar.
+---------------------------
+Fase 1: Perencanaan & Setup Dasar
+Sebelum menulis logika bisnis, kita siapkan fondasinya.
+
+Inisialisasi Project & Struktur Folder:
+
+Setup package.json.
+
+Tentukan struktur folder yang bersih (misal: src yang berisi controllers, models, routes, services, middlewares, dan config).
+
+Siapkan .env untuk menyimpan connection string MongoDB dan URL Redis.
+
+Desain Skema Database (MongoDB):
+
+Rancang model Product (nama, deskripsi, harga, dan yang paling krusial: stok/quantity).
+
+Catatan High-Concurrency: Pikirkan tentang atomic operations. Mengurangi stok tidak boleh sekadar "baca stok -> kurangi di memori -> simpan", karena ini menyebabkan race condition. Anda perlu merancang logika untuk menggunakan operasi atomik MongoDB (seperti $inc).
+
+Fase 2: Core Development (API & Database)
+Fokus pada fungsionalitas utama sebelum optimasi.
+
+Koneksi Database:
+
+Buat modul koneksi ke MongoDB menggunakan Mongoose.
+
+Pastikan koneksi bisa menangani error (graceful shutdown).
+
+Implementasi CRUD Dasar:
+
+Create: Menambah barang baru.
+
+Read: Mengambil daftar barang dan detail satu barang.
+
+Update: Mengubah info barang.
+
+Delete: Menghapus barang.
+
+Handling Concurrency (Logic Stok):
+
+Implementasikan endpoint khusus untuk "pembelian" atau pengurangan stok.
+
+Pastikan logika ini menangani situasi di mana 100 request masuk bersamaan untuk membeli barang yang stoknya tinggal 1. Validasi harus terjadi di level database query, bukan hanya di logic JavaScript.
+
+Fase 3: Performance Optimization (Redis)
+Di sinilah "Value" proyek Anda bersinar.
+
+Setup Redis Client:
+
+Instal library Redis client dan buat modul koneksinya.
+
+Implementasi Caching Strategy (Cache-Aside Pattern):
+
+Read Strategy: Saat user meminta detail produk -> Cek Redis dulu.
+
+Jika Hit (ada): Kembalikan data dari Redis (sangat cepat).
+
+Jika Miss (tidak ada): Ambil dari MongoDB -> Simpan ke Redis -> Kembalikan ke user.
+
+Write/Invalidation Strategy: Saat data produk di-update atau stok berubah di MongoDB -> Hapus (invalidate) key terkait di Redis agar data tidak usang (stale).
+
+Fase 4: Testing (Quality Assurance)
+Ini prasyarat untuk CI/CD.
+
+Setup Jest & Supertest:
+
+Konfigurasi environment testing (gunakan database terpisah atau mocking agar tidak mengganggu data dev).
+
+Penulisan Unit Test:
+
+Buat test untuk endpoint utama (GET produk, POST produk).
+
+Pastikan test mencakup positive case (berhasil) dan negative case (gagal/error handling).
+
+Fase 5: Containerization (Docker)
+Masuk ke "Ops Challenge".
+
+Membuat Dockerfile (Multi-stage Build):
+
+Stage 1 (Builder): Install dependencies lengkap, salin source code, jalankan build (jika pakai TypeScript/Babel), dan prune devDependencies.
+
+Stage 2 (Production): Gunakan base image yang ringan (misal: node:alpine), salin hanya artifact jadi dan node_modules production dari Stage 1. Ini akan membuat image size sangat kecil.
+
+Setup Docker Compose:
+
+Definisikan 3 service: app (aplikasi Node.js Anda), mongo (database), dan redis (cache).
+
+Konfigurasi network agar container bisa saling berkomunikasi menggunakan nama service (misal: connect ke redis://redis:6379).
+
+Gunakan volume untuk MongoDB agar data tidak hilang saat container dimatikan.
+
+Fase 6: CI/CD & Deployment
+Otomatisasi alur kerja agar terlihat profesional.
+
+Konfigurasi GitHub Actions (CI):
+
+Buat file workflow YAML (.github/workflows/main.yml).
+
+Trigger: on push main.
+
+Steps: Checkout code -> Install Node.js -> Install Dependencies -> Jalankan npm test.
+
+Goal: Jika test gagal, GitHub akan memberitahu (tanda silang merah), dan kita tahu kode tersebut belum layak deploy.
+
+Deployment ke Railway (CD):
+
+Hubungkan repo GitHub ke Railway.
+
+Railway akan mendeteksi Dockerfile atau package.json Anda.
+
+Provisioning Database: Tambahkan plugin MongoDB dan Redis di dashboard Railway.
+
+Environment Variables: Masukkan variabel ENV (seperti MONGO_URI dan REDIS_URL) dari Railway ke dalam project setting.
+
+
+
+
+
+
+---------------------------
+yang dijalankan di terminal 
+npm init -y
+# Install dependencies utama (untuk Production)
+npm install express mongoose redis dotenv cors helmet morgan
+
+
+# Install dev dependencies untuk TypeScript
+npm install --save-dev typescript ts-node @types/node @types/express @types/mongoose @types/redis @types/cors @types/helmet @types/morgan @types/jest nodemon
+
+mkdir src
+cd src
+mkdir config controllers middlewares models routes services utils
+
+#buat typesript
+npx tsc --init
+
+#buat docker image
+ni docker-compose.dev.yml
+
+#jalankan database mongo dan redis
+npm run docker:db
+
+
+#install testing :
+npm install --save-dev ts-jest supertest @types/supertest
